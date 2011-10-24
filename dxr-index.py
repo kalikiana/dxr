@@ -278,9 +278,7 @@ def indextree(treecfg, doxref, dohtml, debugfile):
     n = cpu_count()
     p = Pool(processes=n)
 
-    print 'Building HTML files for %s...' % treecfg.tree
-
-    debug = (debugfile is not None)
+    print 'Building HTML files for %s...' % treecfg.tree, ; sys.stdout.flush ()
 
     index_list = open(os.path.join(dbdir, "file_list.txt"), 'w')
     file_list = []
@@ -309,6 +307,9 @@ def indextree(treecfg, doxref, dohtml, debugfile):
     for f in getOutputFiles():
       # In debug mode, we only care about some files
       if debugfile and not treecfg.sourcedir + '/' + f[0] in output_files: continue
+      if os.path.dirname (treecfg.sourcedir + '/' + f[0]) != last_dir:
+        last_dir = os.path.dirname (treecfg.sourcedir + '/' + f[0])
+        print os.path.basename (last_dir), ; sys.stdout.flush ()
 
       index_list.write(f[0] + '\n')
       cpypath = os.path.join(htmlroot, f[0])
@@ -325,6 +326,7 @@ def indextree(treecfg, doxref, dohtml, debugfile):
     if file_list == []:
         print 'Error: No files found to index'
         sys.exit (0)
+    print '...Done', '%d files indexed' % len (file_list)
 
     p.apply_async(make_index, [file_list, dbdir])
 
