@@ -344,11 +344,19 @@ def indextree(treecfg, doxref, dohtml, debugfile):
   # If the database is live, we need to switch the live to the new version
   if treecfg.isdblive:
     try:
-      os.unlink(linkroot)
-      shutil.rmtree(oldroot)
+      try:
+        shutil.rmtree(oldroot)
+      except:
+        pass
+      try:
+        os.remove(linkroot + '.tmp')
+      except:
+        pass
+      os.symlink(currentroot, linkroot + '.tmp')
+      os.rename(linkroot + '.tmp', linkroot)
     except OSError:
-      pass
-    os.symlink(currentroot, linkroot)
+      msg = sys.exc_info()[1] # Python 2/3 compatibility
+      print ('Replacing database failed: %s' % str(msg))
 
 def parseconfig(filename, doxref, dohtml, tree, debugfile):
   # Build the contents of an html <select> and open search links
