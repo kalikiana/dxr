@@ -4,6 +4,9 @@ import os
 import dxr
 import cgi
 import itertools
+import sys
+import subprocess
+from ConfigParser import ConfigParser
 
 class HtmlBuilder:
   def _zipper(self, func):
@@ -38,9 +41,57 @@ class HtmlBuilder:
     # Config info used by dxr.js
     self.globalScript = ['var virtroot = "%s", tree = "%s";' % (self.virtroot, self.treename)]
 
+  def getSidebarActions(self):
+    html = ''
+    config = ConfigParser ()
+    config.read('dxr.config')
+    blameLinks = { \
+      'Log': 'http://hg.mozilla.org/mozilla-central/filelog/$rev/$filename', \
+      'Blame': 'http://hg.mozilla.org/mozilla-central/annotate/$rev/$filename', \
+      'Diff': 'http://hg.mozilla.org/mozilla-central/diff/$rev/$filename', \
+      'Raw': 'http://hg.mozilla.org/mozilla-central/raw-diff/$rev/$filename' }
+    html+=('<div id="sidebarActions"><b>Actions</b>\n')
+    # Pick up revision command and URLs from config file
+    try:
+      source_dir = self.srcroot
+      try:
+        revision_command = config.get(self.treename, 'revision')
+      except:
+        if os.path.exists (source_dir + '/.hg'):
+          revision_command = 'hg id --debug -i -r $source'
+        elif os.path.exists (source_dir + '/.git'):
+          revision_command = 'GIT_DIR=$source/.git git rev-parse HEAD'
+        elif os.path.exists (source_dir + './bzr'):
+          revision_command = "bzr revno"
+        else:
+          raise Exception ('Neither .git, .hg, .bzr nor a "revision" config key found')
+      revision_command = revision_command.replace('$source', source_dir)
+      revision = subprocess.check_output([revision_command], shell=True)
+    except:
+      msg = sys.exc_info()[1] # Python 2/3 compatibility
+      if not 'config-notice' in globals():
+        globals()['config-notice'] = True
+        print '\033[93mError: %s\033[0m' % msg
+      blameLinks = {}
+    for link in blameLinks:
+      try:
+        customLink = config.get(self.treename, link)
+      except:
+        if not 'log-notice' + link in globals() and revision_command[0:2] != 'hg':
+          globals()['log-notice' + link] = True
+          print '\033[93mNotice: Missing %s config key\033[0m' % link
+        customLink = blameLinks[link]
+      realLink = customLink \
+        .replace('$rev', revision) \
+        .replace('$filename', self.srcpath)
+      html+=('<a href="%s">%s</a> &nbsp;\n' % (realLink, link))
+    html+=('</div>')
+    return html
+
   def toHTML(self):
     out = open(self.dstpath, 'w')
-    out.write(self.html_header + '\n')
+    sidebarActions = self.getSidebarActions()
+    out.write(self.html_header.replace('${sidebarActions}', sidebarActions) + '\n')
     self.writeSidebar(out)
     self.writeMainContent(out)
     self.writeGlobalScript(out)
