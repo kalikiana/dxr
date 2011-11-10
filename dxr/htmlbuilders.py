@@ -4,6 +4,9 @@ import os
 import dxr
 import cgi
 import itertools
+import sys
+import subprocess
+from ConfigParser import ConfigParser
 
 class HtmlBuilder:
   def _zipper(self, func):
@@ -52,8 +55,54 @@ class HtmlBuilder:
     if len(sidebarElements) == 0: return
 
     out.write(self.html_sidebar_header + '\n')
+    self.writeSidebarActions(out)
     self.writeSidebarBody(out, sidebarElements)
     out.write(self.html_sidebar_footer + '\n')
+
+  def writeSidebarActions(self, out):
+    print 'HtmlBuilder for %s' % (self.srcpath)
+    config = ConfigParser ()
+    config.read('dxr.config')
+    blameLinks = { \
+      'Log': 'http://hg.mozilla.org/mozilla-central/filelog/$rev/$filename', \
+      'Blame': 'http://hg.mozilla.org/mozilla-central/annotate/$rev/$filename', \
+      'Diff': 'http://hg.mozilla.org/mozilla-central/diff/$rev/$filename', \
+      'Raw': 'http://hg.mozilla.org/mozilla-central/raw-diff/$rev/$filename' }
+    out.write('<div><b>Actions</b><ul>\n')
+    # Pick up revision command and URLs from config file
+    try:
+      source_dir = self.srcroot
+      try:
+        revision_command = config.get(self.treename, 'revision')
+      except:
+        print sys.exc_info()[1]
+        if os.path.exists (source_dir + '/.hg'):
+          revision_command = 'hg id --debug -i -r $source'
+        elif os.path.exists (source_dir + '/.git'):
+          revision_command = 'GIT_DIR=$source/.git git rev-parse HEAD'
+        elif os.path.exists (source_dir + './bzr'):
+          revision_command = "bzr revno"
+        else:
+          raise 'Neither .git, .hg, .bzr nor a "revision" config key found'
+      revision_command = revision_command.replace('$source', source_dir)
+      revision = subprocess.check_output([revision_command], shell=True)
+    except:
+      msg = sys.exc_info()[1] # Python 2/3 compatibility
+      blameLinks = {}
+      print 'Error: %s' % msg
+    for link in blameLinks:
+      try:
+        customLink = config.get(self.treename, link)
+      except:
+        if not 'log-notice' + link in globals() and revision_command[0:2] != 'hg':
+          globals()['log-notice' + link] = True
+          print 'Notice: Missing %s config key' % link
+        customLink = blameLinks[link]
+      realLink = customLink \
+        .replace('$rev', revision) \
+        .replace('$filename', self.srcpath)
+      out.write('<li><a href="%s">%s</a></li>\n' % (realLink, link))
+    out.write('</ul></div>')
 
   def writeSidebarBody(self, out, elements):
     containers = {}
