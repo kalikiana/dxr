@@ -14,10 +14,6 @@ config.read('dxr.config')
 sys.path.append(config.get('DXR', 'dxrroot'))
 import dxr
 
-def like_escape(val):
-  return 'LIKE "%' + val.replace("\\", "\\\\").replace("_", "\\_") \
-    .replace("%", "\\%") + '%" ESCAPE "\\"'
-
 def GetLine(loc):
   # Load the parts
   parts = loc.split(':')
@@ -79,8 +75,13 @@ def processString(string, path=None, ext=None):
   ]
   for table, cols in config:
     results = []
-    for row in conn.execute('SELECT %s FROM %s WHERE %s %s;' % (
-        ', '.join(cols[:-1]), table, cols[0], like_escape(string))).fetchall():
+    statement = conn.execute ('SELECT %s FROM %s WHERE %s LIKE ?' % (
+      ', '.join(cols[:-1]),
+      table, cols[0],
+      ), (
+      string,
+      ))
+    for row in statement:
       results.append((row[0], row[1]))
     printSidebarResults(str.capitalize(table), results)
 
@@ -131,7 +132,7 @@ def processString(string, path=None, ext=None):
     print '</ul>'
 
 def processType(type, path=None):
-  for type in conn.execute('select * from types where tname like "' + type + '%";').fetchall():
+  for type in conn.execute('select * from types where tname like "' + type + '%";'):
     tname = cgi.escape(type['tname'])
     if not path or re.search(path, type['tloc']):
       info = type['tkind']
@@ -178,7 +179,7 @@ def processDerived(derived, path=None):
     typeMaps = dict([(t[1], t[0]) for t in types])
     for method in conn.execute('SELECT scopeid, fqualname, floc FROM functions'+
         ' WHERE scopeid IN (' + ','.join([str(t[1]) for t in types]) + ') AND' +
-        ' fname = ?', (func,)).fetchall():
+        ' fname = ?', (func,)):
       tname = cgi.escape(typeMaps[method[0]])
       mname = cgi.escape(method[1])
       if not path or re.search(path, method[2]):
@@ -187,7 +188,7 @@ def processDerived(derived, path=None):
 
 def processMacro(macro):
   for m in conn.execute('SELECT * FROM macros WHERE macroname LIKE "' +
-      macro + '%";').fetchall():
+      macro + '%";'):
     mname = m['macroname']
     if m['macroargs']:
       mname += m['macroargs']
@@ -197,13 +198,13 @@ def processMacro(macro):
 
 def processFunction(func):
   for f in conn.execute('SELECT * FROM functions WHERE fqualname LIKE "%' +
-      func + '%";').fetchall():
+      func + '%";'):
     print '<h3>%s</h3>' % cgi.escape(f['fqualname'])
     print GetLine(f['floc'])
 
 def processVariable(var):
   for v in conn.execute('SELECT * FROM variables WHERE vname LIKE "%' +
-      var + '%";').fetchall():
+      var + '%";'):
     qual = v['modifiers'] and v['modifiers'] or ''
     print '<h3>%s %s %s</h3>' % (cgi.escape(qual), cgi.escape(v['vtype']),
       cgi.escape(v['vname']))
@@ -216,7 +217,7 @@ def processWarnings(warnings, path=None):
 
   num_warnings = 0
   for w in conn.execute("SELECT wloc, wmsg FROM warnings WHERE wmsg LIKE '%" +
-      warnings + "%' ORDER BY wloc COLLATE loc;").fetchall():
+      warnings + "%' ORDER BY wloc COLLATE loc;"):
     if not path or re.search(path, w[0]):
       print '<h3>%s</h3>' % w[1]
       print GetLine(w[0])
@@ -229,8 +230,8 @@ def processCallers(caller, path=None, funcid=None):
   # Instead, let's first find the function that we're trying to find.
   cur = conn.cursor()
   if funcid is None:
-    cur.execute('SELECT * FROM functions WHERE fqualname %s' %
-      like_escape(caller))
+    cur.execute('SELECT * FROM functions WHERE fqualname LIKE ?', (
+      caller))
     funcinfos = cur.fetchall()
     if len(funcinfos) == 0:
       print '<h2>No results found</h2>'
