@@ -1,4 +1,4 @@
-import dxr.languages
+import languages
 import os
 
 def in_path(exe):

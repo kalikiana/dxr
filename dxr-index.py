@@ -3,9 +3,9 @@
 from multiprocessing import cpu_count
 from multiprocessing.pool import ThreadPool as Pool
 from itertools import chain
-import dxr
-import dxr.htmlbuilders
-import dxr.languages
+import common
+import indexer.languages
+import builder.html
 import getopt
 import glob
 import os
@@ -57,7 +57,7 @@ def WriteOpenSearch(name, hosturl, virtroot, wwwdir):
 def async_toHTML(treeconfig, srcpath, dstfile):
   """Wrapper function to allow doing this async without an instance method."""
   try:
-    dxr.htmlbuilders.make_html(srcpath, dstfile, treeconfig, big_blob)
+    builder.html.make_html(srcpath, dstfile, treeconfig, big_blob)
   except Exception, e:
     print 'Error on file %s:' % srcpath
     import traceback
@@ -164,7 +164,7 @@ def builddb(treecfg, dbdir):
   global big_blob
 
   # We use this all over the place, cache it here.
-  plugins = dxr.get_active_plugins(treecfg)
+  plugins = indexer.get_active_plugins(treecfg)
 
   # Building the database--this happens as multiple phases. In the first phase,
   # we basically collect all of the information and organizes it. In the second
@@ -179,7 +179,7 @@ def builddb(treecfg, dbdir):
 
   # Save off the raw data blob
   print "Storing data..."
-  dxr.store_big_blob(treecfg, big_blob)
+  indexer.store_big_blob(treecfg, big_blob)
 
   # Build the sql for later queries. This is a combination of the main language
   # schema as well as plugin-specific information. The pragmas that are
@@ -193,7 +193,7 @@ def builddb(treecfg, dbdir):
   conn.text_factory = str
 
   # Import the schemata
-  schemata = [dxr.languages.get_standard_schema()]
+  schemata = [indexer.languages.get_standard_schema()]
   for plugin in plugins:
     schemata.append(plugin.get_schema())
   conn.executescript('\n'.join(schemata))
@@ -201,7 +201,7 @@ def builddb(treecfg, dbdir):
 
   # Load and run the SQL
   def sql_generator():
-    for statement in dxr.languages.get_sql_statements():
+    for statement in indexer.languages.get_sql_statements():
       yield statement
     for plugin in plugins:
       if plugin.__name__ in big_blob:
@@ -267,12 +267,12 @@ def indextree(treecfg, doxref, dohtml, debugfile):
   # Build static html
   if dohtml:
     if not doxref:
-      big_blob = dxr.load_big_blob(treecfg)
+      big_blob = indexer.load_big_blob(treecfg)
     # Do we need to do file pivoting?
-    for plugin in dxr.get_active_plugins(treecfg):
+    for plugin in indexer.get_active_plugins(treecfg):
       if plugin.__name__ in big_blob:
         plugin.pre_html_process(treecfg, big_blob[plugin.__name__])
-    dxr.htmlbuilders.build_htmlifier_map(dxr.get_active_plugins(treecfg))
+    builder.html.build_htmlifier_map(indexer.get_active_plugins(treecfg))
     treecfg.database = os.path.join(dbdir, dbname)
 
     n = cpu_count()
@@ -361,7 +361,7 @@ def parseconfig(filename, doxref, dohtml, tree, debugfile):
   options = ''
   opensearch = ''
 
-  dxrconfig = dxr.load_config(filename)
+  dxrconfig = common.load_config(filename)
 
   for treecfg in dxrconfig.trees:
     # if tree is set, only index/build this section if it matches

@@ -12,7 +12,6 @@ import re
 config = ConfigParser.ConfigParser()
 config.read('dxr.config')
 sys.path.append(config.get('DXR', 'dxrroot'))
-import dxr
 
 def GetLine(loc):
   # Load the parts
@@ -279,7 +278,7 @@ else:
 # deployments
 
 # Load the configuration files
-dxrconfig = dxr.load_config('./dxr.config')
+dxrconfig = common.load_config('./dxr.config')
 for treecfg in dxrconfig.trees:
   if treecfg.tree == tree:
     dxrconfig = treecfg

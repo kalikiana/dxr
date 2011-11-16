@@ -1,9 +1,9 @@
-import dxr.plugins
+import plugins
 
 # The following schema is the common global schema, so no matter which plugins
 # are used, this schema will always be present. Most tables have a language
 # column which indicates the source language that the type is written in.
-language_schema = dxr.plugins.Schema({
+language_schema = plugins.Schema({
   # Scope definitions: a scope is anything that is both interesting (i.e., not
   # a namespace) and can contain other objects. The IDs for this scope should be
   # IDs in other tables as well; the table its in can disambiguate which type of

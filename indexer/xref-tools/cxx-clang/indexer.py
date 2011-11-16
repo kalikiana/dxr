@@ -1,6 +1,6 @@
 import csv
-from dxr.languages import register_language_table
-import dxr.plugins
+from indexer.languages import register_language_table
+import indexer.plugins
 import os
 
 decl_master = {}
@@ -95,10 +95,10 @@ def make_blob():
       key = recanon_decl(t[0], t[1])
     if key not in scopes:
       typeKeys.add(key)
-      types[key]['tid'] = scopes[key] = dxr.plugins.next_global_id()
+      types[key]['tid'] = scopes[key] = indexer.plugins.next_global_id()
   # Typedefs need a tid, but they are not a scope
   for t in typedefs:
-    typedefs[t]['tid'] = dxr.plugins.next_global_id()
+    typedefs[t]['tid'] = indexer.plugins.next_global_id()
   funcKeys = set()
   for f in functions:
     key = canonicalize_decl(f[0], f[1])
@@ -106,7 +106,7 @@ def make_blob():
       key = recanon_decl(f[0], f[1])
     if key not in scopes:
       funcKeys.add(key)
-      functions[key]['funcid'] = scopes[key] = dxr.plugins.next_global_id()
+      functions[key]['funcid'] = scopes[key] = indexer.plugins.next_global_id()
 
   # Variables aren't scoped, but we still need to refer to them in the same
   # manner, so we'll unify variables with the scope ids
@@ -114,10 +114,10 @@ def make_blob():
   for v in variables:
     key = (v[0], v[1])
     if key not in varKeys:
-      varKeys[key] = variables[v]['varid'] = dxr.plugins.next_global_id()
+      varKeys[key] = variables[v]['varid'] = indexer.plugins.next_global_id()
 
   for m in macros:
-    macros[m]['macroid'] = dxr.plugins.next_global_id()
+    macros[m]['macroid'] = indexer.plugins.next_global_id()
 
   # Scopes are now defined, this allows us to modify structures for sql prep
 
@@ -307,7 +307,7 @@ def post_process(srcdir, objdir):
   return blob
 
 def pre_html_process(treecfg, blob):
-  blob["byfile"] = dxr.plugins.break_into_files(blob, {
+  blob["byfile"] = plugins.break_into_files(blob, {
     "refs": "refloc",
     "warnings": "wloc",
     "decldef": "declloc",
@@ -319,9 +319,9 @@ def sqlify(blob):
 
 def can_use(treecfg):
   # We need to have clang and llvm-config in the path
-  return dxr.plugins.in_path('clang') and dxr.plugins.in_path('llvm-config')
+  return plugins.in_path('clang') and plugins.in_path('llvm-config')
 
-schema = dxr.plugins.Schema({
+schema = plugins.Schema({
   # Typedef information in the tables
   "typedefs": [
     ("tid", "INTEGER", False),           # The typedef's tid (also in types)
@@ -373,13 +373,12 @@ schema = dxr.plugins.Schema({
   ]
 })
 
-get_schema = dxr.plugins.make_get_schema_func(schema)
+get_schema = plugins.make_get_schema_func(schema)
 
-import dxr
-from dxr.tokenizers import CppTokenizer
+from tokenizers import CppTokenizer
 class CxxHtmlifier:
   def __init__(self, blob, srcpath, treecfg):
-    self.source = dxr.readFile(srcpath)
+    self.source = common.readFile(srcpath)
     self.srcpath = srcpath.replace(treecfg.sourcedir + '/', '')
     self.blob_file = blob["byfile"].get(self.srcpath, None)
 
@@ -396,21 +395,21 @@ class CxxHtmlifier:
         img = 'images/icons/page_white_wrench.png'
       if scope in df and df[scope] > 0:
         return (df[name], loc.split(':')[1], df[name], img,
-          dxr.languages.get_row_for_id("scopes", df[scope])["sname"])
+          languages.get_row_for_id("scopes", df[scope])["sname"])
       return (df[name], loc.split(':')[1], df[name], img)
     for df in self.blob_file["types"]:
       yield make_tuple(df, "tqualname", "tloc", "scopeid")
     for df in self.blob_file["functions"]:
       yield make_tuple(df, "fqualname", "floc", "scopeid")
     for df in self.blob_file["variables"]:
-      if "scopeid" in df and dxr.languages.get_row_for_id("functions", df["scopeid"]) is not None:
+      if "scopeid" in df and languages.get_row_for_id("functions", df["scopeid"]) is not None:
         continue
       yield make_tuple(df, "vname", "vloc", "scopeid")
     tblmap = { "functions": "fqualname", "types": "tqualname" }
     for df in self.blob_file["decldef"]:
       table = df["table"]
       if table in tblmap:
-        yield make_tuple(dxr.languages.get_row_for_id(table, df["defid"]), tblmap[table],
+        yield make_tuple(languages.get_row_for_id(table, df["defid"]), tblmap[table],
           df["declloc"], "scopeid", True)
     for df in self.blob_file["macros"]:
       yield make_tuple(df, "macroname", "macroloc")
@@ -493,4 +492,4 @@ for f in ('.c', '.cc', '.cpp', '.h', '.hpp'):
 def get_htmlifiers():
   return htmlifier
 
-__all__ = dxr.plugins.required_exports()
+__all__ = plugins.required_exports()

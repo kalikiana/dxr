@@ -1,5 +1,5 @@
 import csv
-import dxr.plugins
+import indexer.plugins
 import os
 
 # Unlike the native code, we index here by interface name, since that is a unit

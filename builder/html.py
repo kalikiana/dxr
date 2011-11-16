@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.6
 
 import os
-import dxr
+import common
 import cgi
 import itertools
 import sys
@@ -25,7 +25,7 @@ class HtmlBuilder:
     self.html_main_header = tree.getTemplateFile("dxr-main-header.html")
     self.html_main_footer = tree.getTemplateFile("dxr-main-footer.html")
     
-    self.source = dxr.readFile(filepath)
+    self.source = common.readFile(filepath)
     self.virtroot = tree.virtroot
     self.treename = tree.tree
     self.filename = os.path.basename(filepath)

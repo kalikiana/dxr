@@ -4,7 +4,7 @@ import sys
 sys.path.append('..')
 
 import ConfigParser
-import imp, dxr
+import common
 
 # Read in the configuration for the test
 tests = ConfigParser.ConfigParser()
@@ -12,13 +12,13 @@ tests.read('tests.ini')
 testname = sys.argv[1]
 
 # Get the database data for the tree
-dxrcfg = dxr.load_config(tests.get(testname, 'dxrconfig'))
+dxrcfg = common.load_config(tests.get(testname, 'dxrconfig'))
 if len(dxrcfg.trees) != 1:
   raise Exception('Database can only have one tree')
 tree = dxrcfg.trees[0]
-big_blob = dxr.load_big_blob(tree)
-# For the purposes of language data, dxr.languages.language_data too
-big_blob['dxr.language_data'] = dxr.languages.language_data
+big_blob = common.load_big_blob(tree)
+# For the purposes of language data, indexer.languages.language_data too
+big_blob['indexer.language_data'] = indexer.languages.language_data
 
 # Load the checker data
 load_data = open(tests.get(testname, 'checkdb'))
