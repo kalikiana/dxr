@@ -60,8 +60,8 @@ def processString(string, path=None, ext=None):
       if not outputtedResults:
         outputtedResults = True
         print '<div class="bubble"><span class="title">%s</span><ul>' % name
-      print '<li><a href="%s/%s/%s.html#l%s">%s</a></li>' % \
-        (vrootfix, tree, fixloc[0], fixloc[1], res[0])
+      print '<li><a href="%s/%s/%s.html#l%s">%s%s</a></li>' % \
+        (vrootfix, tree, fixloc[0], fixloc[1], res[2], res[0])
     if outputtedResults:
       print '</ul></div>'
 
@@ -70,19 +70,20 @@ def processString(string, path=None, ext=None):
   config = [
     ('types', ['tname', 'tloc', 'tname']),
     ('macros', ['macroname', 'macroloc', 'macroname']),
-    ('functions', ['fqualname', 'floc', 'fname']),
-    ('variables', ['vname', 'vloc', 'vname']),
+    ('functions', ['fqualname', 'floc', 'fname', 'ftype']),
+    ('variables', ['vname', 'vloc', 'vname', 'vtype']),
   ]
   for table, cols in config:
     results = []
     statement = conn.execute ('SELECT %s FROM %s WHERE %s LIKE ?' % (
-      ', '.join(cols[:-1]),
+      ', '.join(cols),
       table, cols[0],
       ), (
       '%' + string + '%',
       ))
     for row in statement:
-      results.append((row[0], row[1]))
+      try: results.append((row[0], row[1], row[3] + ' '))
+      except: results.append((row[0], row[1], ''))
     printSidebarResults(str.capitalize(table), results)
 
   # Print file sidebar
