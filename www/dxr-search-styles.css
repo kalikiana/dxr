@@ -37,6 +37,6 @@ img{border:0}
 }
 #results .searchfile {text-decoration:none; font-size:90%; margin: .7em 0em .2em 0em; text-decoration:none}
 #results .typeInfo a:link {color:#117711}
-#results ul.searchresults { margin-top: .2em; font-family: monospace; border: 1px solid silver; background-color:#F5F5F5; margin: .1em 0 1em 0; padding: .2em .5em}
+#results ul.searchresults { margin-top: .2em; border: 1px solid silver; background-color:#F5F5F5; margin: .1em 0 1em 0; padding: .2em .5em}
 #results li.searchresult { list-style-type: none; margin: .2em 0; padding-left: 1em }
 h3 { margin-bottom: 5px }

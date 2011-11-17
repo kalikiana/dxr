@@ -124,7 +124,7 @@ def processString(string, path=None, ext=None):
         first = False
         print '<div class="searchfile"><a href="%s/%s/%s.html">%s</a></div><ul class="searchresults">' % (vrootfix, tree, filepath, filepath)
 
-      print '<li class="searchresult"><a href="%s/%s/%s.html#l%s">%s:</a>&nbsp;&nbsp;%s</li>' % (vrootfix, tree, filepath, linenum, linenum, text)
+      print '<li class="searchresult"><a href="%s/%s/%s.html#l%s">%s:</a>&nbsp;&nbsp;<code>%s</code></li>' % (vrootfix, tree, filepath, linenum, linenum, text)
 
   if first:
     print '<p>No files match your search parameters.</p>'
@@ -193,7 +193,7 @@ def processMacro(macro):
     if m['macroargs']:
       mname += m['macroargs']
     mtext = m['macrotext'] and m['macrotext'] or ''
-    print '<h3>%s</h3><pre>%s</pre>' % (cgi.escape(mname), cgi.escape(mtext))
+    print '<h3>%s</h3><code>%s</code>' % (cgi.escape(mname), cgi.escape(mtext))
     print GetLine(m['macroloc'])
 
 def processFunction(func):

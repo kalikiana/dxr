@@ -9,8 +9,8 @@ html, body { height: 100%;
 
 /* Formatting for the main code block. */
 body pre { padding:0; margin: 0 }
-pre > div#linenumbers { position: absolute; left: 0; right: 0; }
-pre > div#code { position: relative; left: 5.5em; }
+pre > #linenumbers { position: absolute; left: 0; right: 0; }
+pre > code { position: relative; left: 5.5em; display: block; }
 .ln { display:inline-block;
       text-align: right;
       width: 3em;
@@ -21,7 +21,7 @@ pre > div#code { position: relative; left: 5.5em; }
       padding-right: 3px;
       height: 1.25em;
 }
-pre > div#linenumbers > div:hover {
+pre > #linenumbers > div:hover {
   background-color: #eee;
 }
 .lnw { background-image: url("images/icons/error.png");

@@ -121,6 +121,7 @@ class HtmlBuilder:
     contKeys = containers.keys()
     contKeys.sort(lambda x, y: cmp(clocs.get(x, 0), clocs.get(y, 0)))
 
+    out.write ('<code>');
     for cont in contKeys:
       if cont is not None:
         out.write('<b>%s</b>\n<div>\n' % cgi.escape(str(cont)))
@@ -133,6 +134,7 @@ class HtmlBuilder:
           (cgi.escape(title), int(e[1]), cgi.escape(e[0])))
       if cont is not None:
         out.write('</div><br />\n')
+    out.write ('</code>');
 
   def writeMainContent(self, out):
     out.write(self.html_main_header)
@@ -188,7 +190,7 @@ class HtmlBuilder:
       (mod[1], mod[0], mod[0], mod[0]) for mod in line_mods]
 
     # Okay, finally, combine everything together into the file.
-    out.write('<div id="linenumbers">%s</div><div id="code">%s</div>' %
+    out.write('<div id="linenumbers">%s</div><code>%s</code>' %
       (''.join(line_divs), ''.join(chars)))
 
   def writeGlobalScript(self, out):
