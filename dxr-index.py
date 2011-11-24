@@ -217,6 +217,12 @@ def builddb(treecfg, dbdir):
   conn.commit()
   conn.close()
 
+def assert_permission_denied():
+  msg = sys.exc_info()[1] # Python 2/3 compatibility
+  if 'Permission denied' in msg:
+    print (msg)
+    sys.exit (1)
+
 def indextree(treecfg, doxref, dohtml, debugfile):
   global big_blob
 
@@ -232,12 +238,14 @@ def indextree(treecfg, doxref, dohtml, debugfile):
         try:
           shutil.rmtree(oldroot)
         except OSError:
+          assert_permission_denied()
           pass
         try:
           shutil.move(currentroot, oldroot)
           os.unlink(linkroot)
           os.symlink(oldroot, linkroot)
         except OSError:
+          assert_permission_denied()
           pass
       else:
         # This current directory is bad, move it away
