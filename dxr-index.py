@@ -173,6 +173,10 @@ def builddb(treecfg, dbdir):
   big_blob = {}
   srcdir = treecfg.sourcedir
   objdir = treecfg.objdir
+  # srcdir=objdir is not a good idea
+  if os.path.normpath(srcdir) == objdir:
+    print('objdir must not be the same as srcdir')
+    sys.exit(1)
   for plugin in plugins:
     if 'post_process' in plugin.__all__:
       big_blob[plugin.__name__] = plugin.post_process(srcdir, objdir)
