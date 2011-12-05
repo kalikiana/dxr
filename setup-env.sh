@@ -8,22 +8,18 @@ if [ -z "${BASH_VERSION}" ]; then
   exit 1
 fi
 
-if [ -z "$1" ]; then
+if [ -z "$1" -o ! -d "$1" -o -z "$2" -o ! -d "$2" -o "$1" = "$2" ]; then
   name="${BASH_SOURCE[0]}"
   if [ -z "$name" ]; then
-	  name=$0
+    name=$0
   fi
-  echo "Usage: . $name <srcdir> [<datadir>]"
+  echo "Usage: . $name <srcdir> <objdir>"
+  echo "srcdir and objdir must be different folders"
   return 0 &>/dev/null
   exit 1
 fi
 SRCDIR=`(cd "$1"; pwd)`
-
-if [ -z "$2" ]; then
-  export OBJDIR="$1"
-else
-  export OBJDIR="$2"
-fi
+export OBJDIR="$2"
 
 if [ -z "$DXRSRC" ]; then
   echo "Setting DXRSRC variable"
