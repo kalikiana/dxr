@@ -150,7 +150,7 @@ schema = dxr.plugins.Schema({
 #get_schema = dxr.plugins.make_get_schema_func(schema)
 get_schema = lambda : ''
 
-from ply import lex
+from indexer import lex
 
 class IdlLexer(object):
   keywords = dict([(x, 'KEYWORD') for x in ['attribute', 'boolean', 'const',

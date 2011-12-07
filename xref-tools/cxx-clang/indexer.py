@@ -378,7 +378,7 @@ schema = dxr.plugins.Schema({
 get_schema = dxr.plugins.make_get_schema_func(schema)
 
 import dxr
-from dxr.tokenizers import CppTokenizer
+from indexer.tokenizers import CppTokenizer
 class CxxHtmlifier:
   def __init__(self, blob, srcpath, treecfg):
     self.source = dxr.readFile(srcpath)
