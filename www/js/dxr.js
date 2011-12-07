@@ -57,7 +57,7 @@ function showInfo(node) {
     error: function (error) {
       infoDiv.set('content',
         '<div class="info" style="width:50%;height:100px"><div id="' + treediv + '">' +
-        '<b>XHR Error</b><p>' + error + '</p></div></div>');
+        '<b>Error</b><p>' + error + '</p></div></div>');
     },
     load: function (response, ioArgs) {
       try {

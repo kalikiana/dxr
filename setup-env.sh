@@ -19,7 +19,13 @@ if [ -z "$1" -o ! -d "$1" -o -z "$2" -o ! -d "$2" -o "$1" = "$2" ]; then
   exit 1
 fi
 SRCDIR=`(cd "$1"; pwd)`
-export OBJDIR="$2"
+
+if [ -z "$2" ]; then
+  echo -e "\e[1;33mThe object dir equals source dir (not recommended).\e[0m\n"
+  export OBJDIR="$1"
+else
+  export OBJDIR="$2"
+fi
 
 if [ -z "$DXRSRC" ]; then
   echo "Setting DXRSRC variable"
