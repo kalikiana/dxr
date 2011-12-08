@@ -1,6 +1,6 @@
 Plugin developer and/or hacker README:
 
-The xref-tools directory contains a set of the standard usable plugins for DXR.
+The plugins directory contains a set of the standard usable plugins for DXR.
 To be usable, a plugin at the least needs to contain an indexer.py file, which
 is the entry point into the plugin from the indexer and web CGI locations.
 

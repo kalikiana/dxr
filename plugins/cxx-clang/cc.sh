@@ -14,7 +14,7 @@ if [ -z $2 ]; then
 	exit 1;
 fi
 
-FLAGS="-Xclang -load -Xclang $DXRSRC/xref-tools/cxx-clang/libclang-index-plugin.so -Xclang -add-plugin -Xclang dxr-index -Xclang -plugin-arg-dxr-index -Xclang $2"
+FLAGS="-Xclang -load -Xclang $DXRSRC/plugins/cxx-clang/libclang-index-plugin.so -Xclang -add-plugin -Xclang dxr-index -Xclang -plugin-arg-dxr-index -Xclang $2"
 
 compiler=$1
 shift;

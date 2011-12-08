@@ -39,10 +39,10 @@ def get_active_plugins(tree=None, dxrsrc=None):
 def load_plugins(dxrsrc=None):
   if dxrsrc is None:
     dxrsrc = os.path.realpath(os.path.dirname(sys.argv[0]))
-  dirs = os.listdir(os.path.join(dxrsrc, 'xref-tools'))
+  dirs = os.listdir(os.path.join(dxrsrc, 'plugins'))
   all_plugins = []
   for dirname in dirs:
-    fullname = os.path.join(dxrsrc, 'xref-tools', dirname)
+    fullname = os.path.join(dxrsrc, 'plugins', dirname)
     try:
       m = imp.find_module('indexer', [fullname])
       module = imp.load_module('dxr.' + dirname, m[0], m[1], m[2])

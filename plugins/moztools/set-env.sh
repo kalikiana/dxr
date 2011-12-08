@@ -8,12 +8,12 @@ if [ -e $SRCDIR/config/rules.mk ]; then
   
   NEEDS_OBJDIR=1
   if [ -e $OUTFILE ]; then
-    if grep -q -- '-include $(DXRSRC)/xref-tools/moztools' $OUTFILE ; then
+    if grep -q -- '-include $(DXRSRC)/plugins/moztools' $OUTFILE ; then
       NEEDS_OBJDIR=0
     fi
   fi
   
   if [ $NEEDS_OBJDIR -eq 1 ]; then
-    echo '-include $(DXRSRC)/xref-tools/moztools/myrules.mk' >> $OUTFILE
+    echo '-include $(DXRSRC)/plugins/moztools/myrules.mk' >> $OUTFILE
   fi
 fi
