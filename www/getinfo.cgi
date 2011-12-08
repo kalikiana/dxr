@@ -276,18 +276,21 @@ if form.has_key('virtroot'):
 if form.has_key('rid'):
   refid = form['rid'].value
 
+# FIXME: Share code with search.cgi
+config = ConfigParser.ConfigParser()
+config.read(['/etc/dxr/dxr.config', './dxr.config'])
 try:
-  config = ConfigParser.ConfigParser()
-  config.read(['/etc/dxr/dxr.config', os.getcwd() + '/dxr.config'])
   wwwdir = config.get('Web', 'wwwdir')
+  sys.path.append(config.get('DXR', 'dxrroot'))
 except:
   msg = sys.exc_info()[1] # Python 2/3 compatibility
-  printError('Error loading dxr.config: %s' % msg)
-  sys.exit(0)
+  printError('Failed to open either %s/dxr.config ' \
+        'or /etc/dxr/dxr.config<p>%s' % (os.getcwd(), msg))
+  sys.exit (0)
+import dxr
 
-dxrdb = os.path.join(wwwdir, tree, '.dxr_xref', tree  + '.sqlite');
-conn = sqlite3.connect(dxrdb)
-conn.execute('PRAGMA temp_store = MEMORY;')
+filename = os.path.join(wwwdir, tree, '.dxr_xref', tree  + '.sqlite');
+conn = dxr.open_database(filename, 'PRAGMA temp_store = MEMORY;')
 conn.row_factory = sqlite3.Row
 
 dispatch = {

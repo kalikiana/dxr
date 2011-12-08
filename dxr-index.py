@@ -189,12 +189,9 @@ def builddb(treecfg, dbdir):
   # schema as well as plugin-specific information. The pragmas that are
   # executed should make the sql stage go faster.
   print "Building SQL..."
-  dbname = treecfg.tree + '.sqlite'
-  conn = sqlite3.connect(os.path.join(dbdir, dbname))
-  conn.execute('PRAGMA synchronous=off')
-  conn.execute('PRAGMA page_size=65536')
-  # Safeguard against non-ASCII text. Let's just hope everyone uses UTF-8
-  conn.text_factory = str
+  dbname = dxr.get_database_filename(treecfg)
+  conn = dxr.open_database(dbname,
+      'PRAGMA synchronous=off; PRAGMA page_size=65536;')
 
   # Import the schemata
   schemata = [dxr.languages.get_standard_schema()]
@@ -260,7 +257,7 @@ def indextree(treecfg, doxref, dohtml, debugfile):
   htmlroot = os.path.join(treecfg.wwwdir, treecfg.tree + '-current')
   dbdir = os.path.join(htmlroot, '.dxr_xref')
   os.makedirs(dbdir, 0755)
-  dbname = treecfg.tree + '.sqlite'
+  dbname = dxr.get_database_filename(treecfg)
 
   retcode = 0
   if doxref:
@@ -285,7 +282,7 @@ def indextree(treecfg, doxref, dohtml, debugfile):
       if plugin.__name__ in big_blob:
         plugin.pre_html_process(treecfg, big_blob[plugin.__name__])
     dxr.htmlbuilders.build_htmlifier_map(dxr.get_active_plugins(treecfg))
-    treecfg.database = os.path.join(dbdir, dbname)
+    treecfg.database = dbname
 
     n = cpu_count()
     p = Pool(processes=n)
