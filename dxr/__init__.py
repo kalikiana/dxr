@@ -5,6 +5,7 @@ import dxr.languages
 import imp
 import os, sys
 import string
+import sqlite3
 
 ###################
 # Plugin handling #
@@ -164,6 +165,36 @@ def load_config(path=['/etc/dxr/dxr.config', './dxr.config']):
   config.read(path)
 
   return DxrConfig(config)
+
+def get_database_filename(treecfg):
+  return os.path.join(treecfg.dbdir, treecfg.tree + '.sqlite')
+
+def open_database(filename, sql):
+  conn = sqlite3.connect(filename)
+  conn.executescript(sql)
+  # Safeguard against non-ASCII text. Let's just hope everyone uses UTF-8
+  conn.text_factory = str
+  # Check core version
+  expected_version = 0
+  version = get_database_version(conn, token='core')
+  if version == None or version != expected_version:
+    raise Exception('Wrong database schema version: ' + filename)
+  return conn
+
+def get_database_version(conn, token):
+  try:
+    result = conn.execute('SELECT version FROM schema_version WHERE token=?',
+                          token)
+    row = result.fetchone()
+    version = row[0] if result else 0
+  except:
+    version = 0
+  return version
+
+def set_database_version(conn, token, version):
+  conn.execute('CREATE TABLE IF NOT EXISTS schema_version' +
+    '(token VARCHAR PRIMARY KEY ON CONFLICT REPLACE, version INT)')
+  conn.execute('INSERT INTO schema_version VALUES (?, ?)', token, version)
 
 __all__ = ['get_active_plugins', 'store_big_blob', 'load_big_blob',
   'load_config', 'readFile']

@@ -302,9 +302,8 @@ if tree == 'undefined':
 
 try:
   # Load the database
-  filename = os.path.join(treecfg.dbdir, tree + '.sqlite')
-  conn = sqlite3.connect(filename)
-  conn.execute('PRAGMA temp_store = MEMORY;')
+  filename = dxr.get_database_filename(treecfg)
+  conn = dxr.open_database(filename, 'PRAGMA temp_store = MEMORY;')
   # Master text index, load it
   filename = os.path.join(treecfg.dbdir, 'file_index.txt')
   master_text = open(filename, 'r')
