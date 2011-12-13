@@ -395,7 +395,7 @@ def parseconfig(filename, doxref, dohtml, tree, debugfile):
   if len(dxrconfig.trees) > 1:
     options += '</select>'
   else:
-    options = '<input type="hidden" id="tree" value="' + tree + '">'
+    options = '<input type="hidden" id="tree" value="' + treecfg.tree + '">'
   indexhtml = indexhtml.replace('$OPTIONS', options)
   indexhtml = indexhtml.replace('$OPENSEARCH', opensearch)
   index = open(os.path.join(dxrconfig.wwwdir, 'index.html'), 'w')
