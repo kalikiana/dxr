@@ -52,27 +52,23 @@ class HtmlBuilder:
       'Raw': 'http://hg.mozilla.org/mozilla-central/raw-diff/$rev/$filename' }
     html+=('<div id="sidebarActions"><b>Actions</b>\n')
     # Pick up revision command and URLs from config file
-    try:
-      source_dir = self.srcroot
+    source_dir = self.srcroot
+    if 'revision' in globals()['revision']:
+      revision = globals()['revision']
+    else:
       try:
         revision_command = config.get(self.treename, 'revision')
+        revision_command = revision_command.replace('$source', source_dir)
+        revision_process = subprocess.Popen ([revision_command], stdout=subprocess.PIPE, shell=True)
+        revision = revision_process.stdout.readline().strip()
       except:
-        if os.path.exists (source_dir + '/.hg'):
-          revision_command = 'hg id --debug -i -r $source'
-        elif os.path.exists (source_dir + '/.git'):
-          revision_command = 'GIT_DIR=$source/.git git rev-parse HEAD'
-        elif os.path.exists (source_dir + './bzr'):
-          revision_command = "bzr revno"
-        else:
-          raise Exception ('Neither .git, .hg, .bzr nor a "revision" config key found')
-      revision_command = revision_command.replace('$source', source_dir)
-      revision_process = subprocess.Popen ([revision_command], stdout=subprocess.PIPE, shell=True)
-      revision = revision_process.stdout.readline().strip()
-    except:
-      msg = sys.exc_info()[1] # Python 2/3 compatibility
-      if not 'config-notice' in globals():
-        globals()['config-notice'] = True
-        print '\033[93mError: %s\033[0m' % msg
+        if not 'config-notice' in globals():
+          globals()['config-notice'] = True
+          msg = sys.exc_info()[1] # Python 2/3 compatibility
+          print '\033[93mError: %s\033[0m' % msg
+        revision = ''
+      globals()['revision'] = revision
+    if revision == '':
       blameLinks = {}
     for link in blameLinks:
       try:
