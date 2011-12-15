@@ -74,7 +74,7 @@ class HtmlBuilder:
       try:
         customLink = config.get(self.treename, link)
       except:
-        if not 'log-notice' + link in globals() and revision_command[0:2] != 'hg':
+        if not 'log-notice' + link in globals():
           globals()['log-notice' + link] = True
           print '\033[93mNotice: Missing %s config key\033[0m' % link
         customLink = blameLinks[link]
