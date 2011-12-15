@@ -67,7 +67,7 @@ class HtmlBuilder:
           raise Exception ('Neither .git, .hg, .bzr nor a "revision" config key found')
       revision_command = revision_command.replace('$source', source_dir)
       revision_process = subprocess.Popen ([revision_command], stdout=subprocess.PIPE, shell=True)
-      revision = revision_process.stdout
+      revision = revision_process.stdout.readline().strip()
     except:
       msg = sys.exc_info()[1] # Python 2/3 compatibility
       if not 'config-notice' in globals():
