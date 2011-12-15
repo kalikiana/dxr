@@ -53,7 +53,7 @@ class HtmlBuilder:
     html+=('<div id="sidebarActions"><b>Actions</b>\n')
     # Pick up revision command and URLs from config file
     source_dir = self.srcroot
-    if 'revision' in globals()['revision']:
+    if 'revision' in globals():
       revision = globals()['revision']
     else:
       try:
