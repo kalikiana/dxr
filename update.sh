@@ -13,6 +13,7 @@ REMOTE= # dxr.lanedo.com
 MAKEFLAGS='-j4 -s V=0'; export MAKEFLAGS
 CFLAGS=-std=gnu89; export CFLAGS
 # FIXME: disable warning: extension used [-pedantic]
+test -z $BUILDCMD && BUILDCMD='make -f client.mk build'
 
 test "`command -v clang`" == "" && echo Failed: clang not found && exit 1
 # FIXME: the generic check doesn't work on Debian squeeze
@@ -28,7 +29,7 @@ $SHELL -c "$VCSPULL"
 echo ' '
 
 rm -Rf $BUILD # clear, including CSV and configure caches
-make -f client.mk build 2>&1 | grep -v 'Unprocessed kind' | grep -v 'clang: warning: argument unused during compilation' || exit 1
+$SHELL -c "$BUILDCMD" 2>&1 | grep -v 'Unprocessed kind' | grep -v 'clang: warning: argument unused during compilation' || exit 1
 NCSV=`find $BUILD -name "*.csv" | wc -l` && test "$NCSV" == "0" && echo Failed: No CSV files && exit 1
 echo ' '
 
