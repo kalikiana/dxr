@@ -17,8 +17,8 @@ test -z $BUILDCMD && BUILDCMD='make -f client.mk build'
 
 test "`command -v clang`" == "" && echo Failed: clang not found && exit 1
 # FIXME: the generic check doesn't work on Debian squeeze
-# for i in `egrep -hR '^\s*import [^"]' $DXRROOT/*.py | grep -v dxr | sed -e 's/^[ \t]*//'`; do python -c "$i"; done || echo Failed: Missing Python modules && exit 1
-python -c 'import xdg.Mime, sqlite3, subprocess' || echo Failed: Missing Python modules && exit 1
+# for i in `egrep -hR '^\s*import [^"]' $DXRROOT/*.py | grep -v dxr | sed -e 's/^[ \t]*//'`; do python -c "$i"; done || (echo Failed: Missing Python modules && exit 1)
+python -c 'import xdg.Mime, sqlite3, subprocess' || (echo Failed: Missing Python modules && exit 1)
 
 # Source
 . $DXRROOT/setup-env.sh $SOURCE $BUILD || exit 1
