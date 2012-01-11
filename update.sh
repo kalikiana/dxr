@@ -2,18 +2,18 @@
 # setup-env.sh requires bash
 
 # Configuration
-test -z $TREE && TREE=mozilla-central
+test -z "$TREE" && TREE=mozilla-central
 SOURCE=/opt/dxr/source/$TREE
 BUILD=/opt/dxr/build/$TREE
 DXRROOT=/opt/dxr/source/dxr
 WWWROOT=/srv/dxr/html
 PATH="/opt/dxr/bin/:$PATH"
-test -z $VCSPULL && VCSPULL='hg pull'
+test -z "$VCSPULL" && VCSPULL='hg pull'
 REMOTE= # dxr.lanedo.com
 MAKEFLAGS='-j4 -s V=0'; export MAKEFLAGS
 CFLAGS=-std=gnu89; export CFLAGS
 # FIXME: disable warning: extension used [-pedantic]
-test -z $BUILDCMD && BUILDCMD='make -f client.mk build'
+test -z "$BUILDCMD" && BUILDCMD='make -f client.mk build'
 
 test "`command -v clang`" == "" && echo Failed: clang not found && exit 1
 # FIXME: the generic check doesn't work on Debian squeeze
