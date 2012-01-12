@@ -43,51 +43,45 @@ class HtmlBuilder:
 
   def getSidebarActions(self):
     html = ''
-    config = ConfigParser ()
-    config.read('dxr.config')
-    blameLinks = { \
-      'Log': 'http://hg.mozilla.org/mozilla-central/filelog/$rev/$filename', \
-      'Blame': 'http://hg.mozilla.org/mozilla-central/annotate/$rev/$filename', \
-      'Diff': 'http://hg.mozilla.org/mozilla-central/diff/$rev/$filename', \
-      'Raw': 'http://hg.mozilla.org/mozilla-central/raw-diff/$rev/$filename' }
     html+=('<div id="sidebarActions"><b>Actions</b>\n')
     # Pick up revision command and URLs from config file
     source_dir = self.srcroot
-    if 'revision' in globals():
-      revision = globals()['revision']
+    if 'blame-actions' in globals():
+      revision, blameLinks = globals()['blame-actions']
     else:
       try:
+        # 'revision' and 'actions' are required, keys are case-insensitive
+        # revision=hg id -i -R /path/to/tree
+        # actions=Log,Diff
+        # Diff=http://hg.mozilla.org/mozilla-central/diff/$rev/$filename
+        config = ConfigParser ()
+        config.read('dxr.config')
         revision_command = config.get(self.treename, 'revision')
         revision_command = revision_command.replace('$source', source_dir)
         revision_process = subprocess.Popen ([revision_command], stdout=subprocess.PIPE, shell=True)
         revision = revision_process.stdout.readline().strip()
+        actions = config.get(self.treename, 'actions')
+        actions += ',' # always treat a single action like multiple
+        blameLinks = {}
+        for action in actions.split(','):
+          if action == '':
+            continue
+          blameLinks[action] = config.get(self.treename, action)
+        globals()['blame-actions'] = revision, blameLinks
       except:
-        if not 'config-notice' in globals():
-          globals()['config-notice'] = True
-          msg = sys.exc_info()[1] # Python 2/3 compatibility
-          print '\033[93mError: %s\033[0m' % msg
-        revision = ''
-      globals()['revision'] = revision
-    if revision == '':
-      blameLinks = {}
-    for link in blameLinks:
-      try:
-        customLink = config.get(self.treename, link)
-      except:
-        if not 'log-notice' + link in globals():
-          globals()['log-notice' + link] = True
-          print '\033[93mNotice: Missing %s config key\033[0m' % link
-        customLink = blameLinks[link]
-      realLink = customLink \
+        msg = sys.exc_info()[1] # Python 2/3 compatibility
+        raise Exception (msg)
+    for action in blameLinks:
+      realLink = blameLinks[action] \
         .replace('$rev', revision) \
         .replace('$filename', self.srcpath)
-      html+=('<a href="%s">%s</a> &nbsp;\n' % (realLink, link))
+      html+=('<a href="%s">%s</a> &nbsp;\n' % (realLink, action))
     html+=('</div>')
     return html
 
   def toHTML(self):
-    out = open(self.dstpath, 'w')
     sidebarActions = self.getSidebarActions()
+    out = open(self.dstpath, 'w')
     out.write(self.html_header.replace('${sidebarActions}', sidebarActions) + '\n')
     self.writeSidebar(out)
     self.writeMainContent(out)
