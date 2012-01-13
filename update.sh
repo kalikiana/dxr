@@ -2,7 +2,7 @@
 # setup-env.sh requires bash
 
 # Configuration
-test -z "$TREE" && TREE=mozilla-central
+TREE="$1"
 test -z "$DXRCONFIG" && (test -f /etc/dxr/dxr.config && DXRCONFIG=/etc/dxr/dxr.config) || DXRCONFIG=dxr.config
 test -z "$VCSPULL" && VCSPULL='hg pull'
 # REMOTE=dxr.lanedo.com
@@ -15,6 +15,11 @@ SOURCE=`readconfig $TREE sourcedir`
 BUILD=`readconfig $TREE objdir`
 DXRROOT=`readconfig DXR dxrroot`
 WWWROOT=`readconfig Web wwwdir`
+
+if [ "$TREE" == "" -o "$SOURCE" == "" -o "$BUILD" == "" ]; then
+  echo Usage: $0 TREE
+  exit 1
+fi
 
 PATH="/opt/dxr/bin/:$PATH"
 MAKEFLAGS='-j4 -s V=0'; export MAKEFLAGS
