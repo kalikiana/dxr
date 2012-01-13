@@ -3,21 +3,22 @@
 
 # Configuration
 TREE="$1"
+REMOTE="$2"
 test -z "$DXRCONFIG" && (test -f /etc/dxr/dxr.config && DXRCONFIG=/etc/dxr/dxr.config) || DXRCONFIG=dxr.config
-test -z "$VCSPULL" && VCSPULL='hg pull'
-# REMOTE=dxr.lanedo.com
-test -z "$BUILDCMD" && BUILDCMD='make -f client.mk build'
 
 readconfig() {
   cat $DXRCONFIG | sed -n /^\[$1\]/,/^\[.*\]/p | grep "^[[:space:]]*$2[[:space:]]*=" | sed s/.*=[:space:]*//
 }
 SOURCE=`readconfig $TREE sourcedir`
 BUILD=`readconfig $TREE objdir`
+VCSPULL=`readconfig $TREE pullcommand`
+BUILDCMD=`readconfig $TREE buildcommand`
 DXRROOT=`readconfig DXR dxrroot`
 WWWROOT=`readconfig Web wwwdir`
 
-if [ "$TREE" == "" -o "$SOURCE" == "" -o "$BUILD" == "" ]; then
-  echo Usage: $0 TREE
+if [ "$TREE" == "" -o "$SOURCE" == "" -o "$BUILD" == "" -o "$VCSPULL" == "" -o "$BUILDCMD" == "" ]; then
+  echo Usage: $0 TREE [REMOTE]
+  echo The section [$TREE] must contain 'pullcommand' and 'buildcommand' keys.
   exit 1
 fi
 
