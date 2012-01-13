@@ -3,17 +3,23 @@
 
 # Configuration
 test -z "$TREE" && TREE=mozilla-central
-SOURCE=/opt/dxr/source/$TREE
-BUILD=/opt/dxr/build/$TREE
-DXRROOT=/opt/dxr/source/dxr
-WWWROOT=/srv/dxr/html
-PATH="/opt/dxr/bin/:$PATH"
+test -z "$DXRCONFIG" && (test -f /etc/dxr/dxr.config && DXRCONFIG=/etc/dxr/dxr.config) || DXRCONFIG=dxr.config
 test -z "$VCSPULL" && VCSPULL='hg pull'
-REMOTE= # dxr.lanedo.com
+# REMOTE=dxr.lanedo.com
+test -z "$BUILDCMD" && BUILDCMD='make -f client.mk build'
+
+readconfig() {
+  cat $DXRCONFIG | sed -n /^\[$1\]/,/^\[.*\]/p | grep "^[[:space:]]*$2[[:space:]]*=" | sed s/.*=[:space:]*//
+}
+SOURCE=`readconfig $TREE sourcedir`
+BUILD=`readconfig $TREE objdir`
+DXRROOT=`readconfig DXR dxrroot`
+WWWROOT=`readconfig Web wwwdir`
+
+PATH="/opt/dxr/bin/:$PATH"
 MAKEFLAGS='-j4 -s V=0'; export MAKEFLAGS
 CFLAGS=-std=gnu89; export CFLAGS
 # FIXME: disable warning: extension used [-pedantic]
-test -z "$BUILDCMD" && BUILDCMD='make -f client.mk build'
 
 test "`command -v clang`" == "" && echo Failed: clang not found && exit 1
 # FIXME: the generic check doesn't work on Debian squeeze
